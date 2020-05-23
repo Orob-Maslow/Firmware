@@ -75,7 +75,7 @@ void settingsReset() {
     sysSettings.rotationDiskRadius = 250.0;  // float rotationDiskRadius;
     sysSettings.axisDetachTime = 2000;   // int axisDetachTime;
     sysSettings.chainLength = 3360;   // int maximum length of chain;
-    sysSettings.originalChainLength = 1650;   // int originalChainLength;
+    sysSettings.originalChainLength = 1651;   // int originalChainLength;
     sysSettings.encoderSteps = 8113.73; // float encoderSteps;
     sysSettings.distPerRot = 63.5;   // float distPerRot;
     sysSettings.maxFeed = 700;   // int maxFeed;
@@ -106,7 +106,8 @@ void settingsReset() {
     sysSettings.leftChainTolerance = 0.0;    // float leftChainTolerance;
     sysSettings.rightChainTolerance = 0.0;    // float rightChainTolerance;
     sysSettings.positionErrorLimit = 2.0;  // float positionErrorLimit;
-    sysSettings.topBeamTilt = 0.0;
+    sysSettings.zAxisUpperLimit = NAN; // float zAxisUpperLimit
+    sysSettings.zAxisLowerLimit = NAN;  // float zAxisLowerLimit
     sysSettings.eepromValidData = EEPROMVALIDDATA; // byte eepromValidData;
     sysSettings.enableOpticalCalibration = false;
     sysSettings.useInterpolationOrCurve = true;
@@ -182,6 +183,7 @@ void settingsSaveStepstoEEprom(){
         EEPROMVALIDDATA
       };
       EEPROM.put(310, sysSteps);
+      sys.writeStepsToEEPROM = false;
     }
 }
 
@@ -409,6 +411,7 @@ byte settingsStoreGlobalSetting(const byte& parameter,const float& value){
             break;
         case 37:
               sysSettings.chainSagCorrection = value;
+              kinematics.init();
               break;
         case 38:
               settingsSaveStepstoEEprom();
@@ -427,64 +430,21 @@ byte settingsStoreGlobalSetting(const byte& parameter,const float& value){
               break;
         case 40:
               sysSettings.leftChainTolerance = value;
+              kinematics.init();
               break;
         case 41:
               sysSettings.rightChainTolerance = value;
+              kinematics.init();
               break;
         case 42:
               sysSettings.positionErrorLimit = value;
               break;
         case 43:
-              sysSettings.topBeamTilt = value;
-              kinematics.recomputeGeometry();
+              sysSettings.zAxisUpperLimit = value;
               break;
-        case 44: case 46: case 47: case 48: case 49: case 50: case 51: case 52: case 53: case 54: case 55: case 56: case 57: case 58:
-            switch(parameter) {
-                case 44:
-                      sysSettings.enableOpticalCalibration = value;
-                      break;
-                case 46:
-                      sysSettings.useInterpolationOrCurve = value;
-                      break;
-                case 47:
-                      sysSettings.calX0 = value;
-                      break;
-                case 48:
-                      sysSettings.calX1 = value;
-                      break;
-                case 49:
-                      sysSettings.calX2 = value;
-                      break;
-                case 50:
-                      sysSettings.calX3 = value;
-                      break;
-                case 51:
-                      sysSettings.calX4 = value;
-                      break;
-                case 52:
-                      sysSettings.calX5 = value;
-                      break;
-                case 53:
-                      sysSettings.calY0 = value;
-                      break;
-                case 54:
-                      sysSettings.calY1 = value;
-                      break;
-                case 55:
-                      sysSettings.calY2 = value;
-                      break;
-                case 56:
-                      sysSettings.calY3 = value;
-                      break;
-                case 57:
-                      sysSettings.calY4 = value;
-                      break;
-                case 58:
-                      sysSettings.calY5 = value;
-                      break;
-           }
-           kinematics.init();
-           break;
+        case 44:
+              sysSettings.zAxisLowerLimit = value;
+              break;        
         default:
               return(STATUS_INVALID_STATEMENT);
     }

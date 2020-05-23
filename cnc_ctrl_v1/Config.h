@@ -25,13 +25,22 @@
                            // LOOPINTERVAL tuning
 #define KINEMATICSDBG 0    // set to 1 for additional kinematics debug messaging
 
-// #define FAKE_SERVO      // Uncomment this line to cause the Firmware to mimic
-                           // a servo updating the encoder steps even if no servo
-                           // is connected.  Useful for testing on an arduino only
+#define FAKE_SERVO_PERMITTED 42 // store this value
+#define FAKE_SERVO 4095    // in EEPROM[ 4095 ] to preserve
+                           // the state of FAKE_SERVO mode over resets.
+                           // Use 'B99 ON' to turn FAKE_SERVO mode on and set EEPROM[ 4095 ] to '1',
+                           // 'B99' with no parameter, or any parameter other than 'ON' 
+                           // puts a '0' in that location and turns FAKE_SERVO mode off.
+                           // Useful for testing on an arduino only (e.g. without motors).
 
 // #define SIMAVR          // Uncomment this if you plan to run the Firmware in the simavr
                            // simulator. Normally, you would not define this directly, but
                            // use PlatformIO to build the simavr environment.
+
+// #define alarmsTLE9201   // Uncomment this to make TLE9201 over-current/over-temp alarms active
+                           // Note that in normal operation these alarms are often triggered by 
+                           // abrupt direction change. Until acceleration control is available,
+                           // the alarms aren't useful.
 
 #define LOOPINTERVAL 10000 // What is the frequency of the PID loop in microseconds
 
@@ -60,5 +69,9 @@
                             // a larger number make position updates in GC less
                             // smooth.  This is only a minimum, and the actual
                             // timeout could be significantly larger.
+
+#define CMD_RESET 0x18      // ctrl-x., if received the program should do a soft reset
+                            // if received the program should do a soft reset
+#define CMD_RESET2 '`'      // alternate char because GC won't use control characters in a macro
 
 #endif

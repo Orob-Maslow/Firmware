@@ -17,6 +17,7 @@
 
 
 #include "Maslow.h"
+// #include <EEPROM.h>
 
 void Axis::setup(const int& pwmPin, const int& directionPin1, const int& directionPin2, const int& encoderPin1, const int& encoderPin2, const char& axisName, const unsigned long& loopInterval)
 {
@@ -43,9 +44,26 @@ void   Axis::initializePID(const unsigned long& loopInterval){
 }
 
 void    Axis::write(const float& targetPosition){
-    _timeLastMoved = millis();
-    _pidSetpoint   =  targetPosition/ *_mmPerRotation;
-    return;
+
+   _timeLastMoved = millis();
+
+   // Check that the Z axis position is within limits specified in Settings
+   
+   if(_axisName == 'Z'){
+      if(!isnan(sysSettings.zAxisUpperLimit) && targetPosition > sysSettings.zAxisUpperLimit){
+        _pidSetpoint   =  sysSettings.zAxisUpperLimit/ *_mmPerRotation;
+        return;
+      }
+        
+      if(!isnan(sysSettings.zAxisLowerLimit) && targetPosition < sysSettings.zAxisLowerLimit){
+        _pidSetpoint   =  sysSettings.zAxisLowerLimit/ *_mmPerRotation;
+        return;
+      }
+   }
+
+   // update target position
+   _pidSetpoint   =  targetPosition/ *_mmPerRotation;
+   return;
 }
 
 float  Axis::read(){
@@ -61,10 +79,25 @@ float  Axis::setpoint(){
 
 void   Axis::set(const float& newAxisPosition){
     
+   // update the zAxis upper and lower limits relative to the new axis position
+   
+   if(_axisName == 'Z'){
+      if(!isnan(sysSettings.zAxisUpperLimit)){
+        sysSettings.zAxisUpperLimit += newAxisPosition - read();
+      }
+      
+      if(!isnan(sysSettings.zAxisLowerLimit)){
+        sysSettings.zAxisLowerLimit += newAxisPosition - read();
+      }
+      
+      if(!isnan(sysSettings.zAxisUpperLimit) || !isnan(sysSettings.zAxisLowerLimit)){
+        settingsSaveToEEprom();
+      }
+   }
+   
     //reset everything to the new value
     _pidSetpoint  =  newAxisPosition/ *_mmPerRotation;
-    motorGearboxEncoder.encoder.write((newAxisPosition * *_encoderSteps)/ *_mmPerRotation);
-    
+    motorGearboxEncoder.encoder.write((newAxisPosition * *_encoderSteps)/ *_mmPerRotation);   
 }
 
 long Axis::steps(){
@@ -84,14 +117,14 @@ void   Axis::setSteps(const long& steps){
 
 void   Axis::computePID(){
     
-    #ifdef FAKE_SERVO
-      if (motorGearboxEncoder.motor.attached()){
-        // Adds up to 10% error just to simulate servo noise
-        double rpm = (-1 * _pidOutput) * random(90, 110) / 100;
-        unsigned long steps = motorGearboxEncoder.encoder.read() + round( rpm * *_encoderSteps * LOOPINTERVAL)/(60 * 1000000);
-        motorGearboxEncoder.encoder.write(steps);
+      if (FAKE_SERVO_STATE == FAKE_SERVO_PERMITTED) {
+          if (motorGearboxEncoder.motor.attached()){
+            // Adds up to 10% error just to simulate servo noise
+            double rpm = (-1 * _pidOutput) * random(90, 110) / 100;
+            unsigned long steps = motorGearboxEncoder.encoder.read() + round( rpm * *_encoderSteps * LOOPINTERVAL)/(60 * 1000000);
+            motorGearboxEncoder.encoder.write(steps);
+          }
       }
-    #endif
 
     if (_disableAxisForTesting || !motorGearboxEncoder.motor.attached()){
         return;
@@ -197,6 +230,7 @@ int    Axis::detach(){
 
 int    Axis::attach(){
      motorGearboxEncoder.motor.attach();
+     sys.writeStepsToEEPROM = true;
      return 1;
 }
 
@@ -223,10 +257,26 @@ void   Axis::detachIfIdle(){
 
 void   Axis::endMove(const float& finalTarget){
     
-    _timeLastMoved = millis();
-    _pidSetpoint    = finalTarget/ *_mmPerRotation;
+   _timeLastMoved = millis();
+   
+   // Check that the Z axis position is within limits specified in Settings
+
+   if(_axisName == 'Z'){
+      if(!isnan(sysSettings.zAxisUpperLimit) && finalTarget > sysSettings.zAxisUpperLimit){
+        _pidSetpoint   =  sysSettings.zAxisUpperLimit/ *_mmPerRotation;
+        return;
+      }
+      
+      if(!isnan(sysSettings.zAxisLowerLimit) && finalTarget < sysSettings.zAxisLowerLimit){
+        _pidSetpoint   =  sysSettings.zAxisLowerLimit/ *_mmPerRotation;
+        return;
+      }
+   }
+
+   _pidSetpoint    = finalTarget/ *_mmPerRotation;
     
 }
+
 
 void   Axis::stop(){
     /*
@@ -256,12 +306,14 @@ void   Axis::test(){
     double encoderPos = motorGearboxEncoder.encoder.read(); //record the position now
     
     //move the motor
+    motorGearboxEncoder.motor.directWrite(255);
     while (i < 1000){
-        motorGearboxEncoder.motor.directWrite(255);
         i++;
         maslowDelay(1);
         if (sys.stop){return;}
     }
+    //stop the motor
+    motorGearboxEncoder.motor.directWrite(0);
     
     //check to see if it moved
     if(encoderPos - motorGearboxEncoder.encoder.read() > 500){
@@ -277,12 +329,14 @@ void   Axis::test(){
     
     //move the motor in the other direction
     i = 0;
+    motorGearboxEncoder.motor.directWrite(-255);
     while (i < 1000){
-        motorGearboxEncoder.motor.directWrite(-255);
         i++;
         maslowDelay(1);
         if (sys.stop){return;}
     }
+    //stop the motor
+    motorGearboxEncoder.motor.directWrite(0);
     
     //check to see if it moved
     if(encoderPos - motorGearboxEncoder.encoder.read() < -500){
@@ -292,8 +346,6 @@ void   Axis::test(){
         Serial.println(F("Direction 2 - Fail"));
     }
     
-    //stop the motor
-    motorGearboxEncoder.motor.directWrite(0);
     Serial.print(F("<Idle,MPos:0,0,0,WPos:0.000,0.000,0.000>"));
 }
 

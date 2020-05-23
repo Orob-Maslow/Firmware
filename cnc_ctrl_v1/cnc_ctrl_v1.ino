@@ -31,9 +31,11 @@
  */
     
 
+// TLE9201 version
 // TLE5206 version
 
 #include "Maslow.h"
+#include <EEPROM.h>
 
 // Define system global state structure
 system_t sys;
@@ -46,6 +48,9 @@ calibration_t calibration;
 
 // Global realtime executor bitflag variable for setting various alarms.
 byte systemRtExecAlarm;  
+
+// Define global flag for FAKE_SERVO state
+int FAKE_SERVO_STATE = 0;
 
 // Define axes, it might be tighter to define these within the sys struct
 Axis leftAxis;
@@ -61,9 +66,19 @@ void setup(){
     Serial.print(F("PCB v1."));
     Serial.print(getPCBVersion());
     if (TLE5206 == true) { Serial.print(F(" TLE5206 ")); }
+    if (TLE9201 == true) { Serial.print(F(" TLE9201 ")); }
     Serial.println(F(" Detected"));
     sys.inchesToMMConversion = 1;
+    sys.writeStepsToEEPROM = false;
+    FAKE_SERVO_STATE = EEPROM[ FAKE_SERVO ];
+    if (FAKE_SERVO_STATE == FAKE_SERVO_PERMITTED) { // only this value is accepted
+        Serial.println(F("FAKE_SERVO on"));         // to turn this on
+    } else {
+        Serial.println(F("FAKE_SERVO off"));        // otherwise 
+        EEPROM[ FAKE_SERVO ] = 0;                   // force it to the 'off' value
+    }
     settingsLoadFromEEprom();
+    sys.feedrate = sysSettings.maxFeed / 2.0;
     setupAxes();
     settingsLoadStepsFromEEprom();
     // Set initial desired position of the machine to its current position
