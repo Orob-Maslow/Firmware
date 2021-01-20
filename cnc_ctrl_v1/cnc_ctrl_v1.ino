@@ -33,6 +33,7 @@
 
 // TLE9201 version
 // TLE5206 version
+// TB6643 version
 
 #include "Maslow.h"
 #include <EEPROM.h>
@@ -64,6 +65,7 @@ void setup(){
     Serial.print(getPCBVersion());
     if (TLE5206 == true) { Serial.print(F(" TLE5206 ")); }
     if (TLE9201 == true) { Serial.print(F(" TLE9201 ")); }
+    if (TB6643 == true)  { Serial.print(F(" TB6643 "))}
     Serial.println(F(" Detected"));
     sys.inchesToMMConversion = 1;
     sys.writeStepsToEEPROM = false;
