@@ -46,6 +46,7 @@ void settingsLoadFromEEprom(){
 
     // Apply settings
     setPWMPrescalers(int(sysSettings.fPWM));
+    Serial.print("set prescaler to " + sysSettings.fPWM);
     kinematics.recomputeGeometry();
     leftAxis.changeEncoderResolution(&sysSettings.encoderSteps);
     rightAxis.changeEncoderResolution(&sysSettings.encoderSteps);
@@ -101,7 +102,7 @@ void settingsReset() {
     sysSettings.zPropWeightV = 1.0;    // float zPropWeightV;              4
     sysSettings.chainSagCorrection = 0.0;  // float chainSagCorrection;    4
     sysSettings.chainOverSprocket = 1;   // byte chainOverSprocket;        1
-    sysSettings.fPWM = 3;   // byte fPWM;                                  1
+    sysSettings.fPWM = 3;   // byte fPWM; // 490 hz.9201 and 6643 can      1 go much faster , so a 2 or 1 would work.
     sysSettings.leftChainTolerance = 0.0;    // float leftChainTolerance;  4 
     sysSettings.rightChainTolerance = 0.0;    // float rightChainTolerance;4 -
     sysSettings.positionErrorLimit = 2.0;  // float positionErrorLimit;    4

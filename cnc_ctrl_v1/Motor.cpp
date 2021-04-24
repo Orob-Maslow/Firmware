@@ -50,7 +50,7 @@ int  Motor::setupMotor(const int& pwmPin, const int& pin1, const int& pin2){
 
   } else if (TB6643 == true){
   //set pinmodes
-    pinMode(_pwmPin,   INPUT);   // TLE5206 'Error Flag' pin
+    pinMode(_pwmPin,   INPUT);
     pinMode(_pin1,     OUTPUT);
     pinMode(_pin2,     OUTPUT);
 

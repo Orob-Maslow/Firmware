@@ -27,9 +27,9 @@
  */
 
 
-// TLE9201 version
-// TLE5206 version
-// TB6643 version
+// TLE9201 version 1.6
+// TLE5206 version 1.3, 1.4
+// TB6643 version 1.5b
 
 #include "Maslow.h"
 #include <EEPROM.h>
@@ -61,7 +61,7 @@ void setup(){
     Serial.print(getPCBVersion());
     if (TLE5206 == true) { Serial.print(F(" TLE5206 ")); }
     if (TLE9201 == true) { Serial.print(F(" TLE9201 ")); }
-    if (TB6643 == true)  { Serial.print(F(" TB6643 ")); }
+    if (TB6643 == true)  { Serial.print(F("b TB6643 ")); }
     Serial.println(F(" Detected"));
     sys.inchesToMMConversion = 1;
     sys.writeStepsToEEPROM = false;
@@ -73,7 +73,7 @@ void setup(){
         EEPROM[ FAKE_SERVO ] = 0;                   // force it to the 'off' value
     }
     settingsLoadFromEEprom();
-    sys.feedrate = sysSettings.maxFeed / 2.0;
+    //sys.feedrate = sysSettings.maxFeed / 2.0;  // removed 4/10/21
     setupAxes();
     settingsLoadStepsFromEEprom();
     // Set initial desired position of the machine to its current position

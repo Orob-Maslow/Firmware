@@ -138,6 +138,7 @@ void   setupAxes(){
         aux7 = -1;       // unconnected
         aux8 = -1;       // unconnected
         aux9 = -1;       // unconnected
+        
     }
     else if(pcbVersion == 1){
         //PCB v1.1 Detected
@@ -248,10 +249,10 @@ void   setupAxes(){
         
         //MP1 - Right Motor
         encoder1A = 2;  // INPUT
-        encoder1B = 3;  // INPUT
-        in1 = 9;        // OUTPUT
-        in2 = 10;       // OUTPUT
-        //enA = 12;     // errorFlag
+        encoder1B = 3;  // INPUT     |  pin level and output direction
+        in1 = 9;        // OUTPUT    |    L    H    L
+        in2 = 10;       // OUTPUT    |    L    L    H
+        //enA = 12;     // errorFlag |   off  CCW  CW
 
         //MP2 - Z-axis
         encoder2A = 18; // INPUT
@@ -273,6 +274,10 @@ void   setupAxes(){
         aux4 = 50;
         aux5 = 43;
         aux6 = 44;
+        aux7 = 45;
+        aux8 = 46;
+        aux9 = 47;
+        Serial.print("eastbay 1.5b detected and set up");
     }
     else if (pcbVersion == 6){ // TLE9201
         //TLE9201 PCB v1.6 Detected
@@ -526,7 +531,11 @@ void setPWMPrescalers(int prescalerChoice) {
     // The upper limit to PWM frequency for TLE5206 is 1,000Hz
     //  so only '3' is valid
         prescalerChoice = 3;
-    } else if (TLE9201) {
+    } else if (TB6643){
+        prescalerChoice = 1;
+    }else if (TLE9201) {
+    //    prescalerChoice = 2;
+    //}
     // The upper limit to PWM frequency for TLE9201 is 20,000Hz
         prescalerChoice = constrain(prescalerChoice,2,3);
     }
@@ -559,13 +568,22 @@ void setPWMPrescalers(int prescalerChoice) {
 // Code:  TCCR3B = (TCCR3B & 0xF8) | value ;
 // —————————————————————————————-
     // and apply it
-    if (prescalerChoice >= 3) {
-      TCCR2B |= (prescalerChoice + 1); // pins 9, 10 - change to match timers3&4
+    if (prescalerChoice <= 3) {
+      TCCR2B |= prescalerChoice;  // pins   9, 10 - timer 2
+      TCCR3B |= prescalerChoice;  // pins 2, 3, 5 - timer 3
+      TCCR4B |= prescalerChoice;  // pins 6, 7, 8 - timer 4
+     
     } else {
-      TCCR2B |= prescalerChoice; // pins 9, 10
+      if (prescalerChoice == 3){
+        TCCR2B |= (prescalerChoice + 1); // pins 9, 10
+        TCCR3B |= prescalerChoice;     // pins 2, 3, 5
+        TCCR4B |= prescalerChoice;     // pins 6, 7, 8
+      }else{
+        TCCR2B |= (prescalerChoice + 2); // pins 9, 10
+        TCCR3B |= prescalerChoice;     // pins 2, 3, 5
+        TCCR4B |= prescalerChoice;     // pins 6, 7, 8
       }
-    TCCR3B |= prescalerChoice;   // pins 2, 3, 5
-    TCCR4B |= prescalerChoice;   // pins 6, 7, 8
+    }
 }
 
 
