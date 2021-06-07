@@ -251,28 +251,28 @@ void   setupAxes(){
         encoder1B = 3;  // INPUT
         in1 = 9;        // OUTPUT
         in2 = 10;       // OUTPUT
-        //enA = 12;     // errorFlag
+      
 
         //MP2 - Z-axis
         encoder2A = 18; // INPUT
         encoder2B = 19; // INPUT
         in3 = 7;        // OUTPUT
         in4 = 8;        // OUTPUT
-        //enB = 8;      // errorFlag
+       
 
         //MP3 - Left Motor
         encoder3A = 21; // INPUT
         encoder3B = 20; // INPUT
         in5 = 6;        // OUTPUT
         in6 = 5;        // OUTPUT
-        //enC = 5;      // errorFlag
+       
         //AUX pins
-        aux1 = 48;
-        aux2 = 49;
-        aux3 = 51;
-        aux4 = 50;
-        aux5 = 43;
-        aux6 = 44;
+        aux1 = 48;      // Router ON pin->HIGH
+        aux2 = 49;      // Probe INPUT
+        aux3 = 51;      // NC
+        aux4 = 50;      // Laser ON pin->HIGH
+        aux5 = 43;      // NC
+        aux6 = 44;      // NC
     }
     else if (pcbVersion == 6){ // TLE9201
         //TLE9201 PCB v1.6 Detected
@@ -388,8 +388,15 @@ void   setupAxes(){
       SpindleSpeedPin = 45;     // pwm output for controlling spindle speed
       pinMode(SpindleSpeedPin, OUTPUT);
     #endif
-    LaserPowerPin = aux2;            // output for controlling a laser diode
-    ProbePin = aux4;                 // use this input for zeroing zAxis with G38.2 gcode
+    if (pcbVersion == 5){
+        LaserPowerPin = aux4;            // output for controlling a laser diode
+        ProbePin = aux2;  
+    } 
+    else {
+      LaserPowerPin = aux2;            // output for controlling a laser diode
+      ProbePin = aux4; 
+    }
+    // use this input for zeroing zAxis with G38.2 gcode
     pinMode(LaserPowerPin, OUTPUT);
     digitalWrite(LaserPowerPin, LOW);
 
@@ -397,16 +404,16 @@ void   setupAxes(){
     // Using these variables in a test permits to avoid warnings like
     //  "warning: variable ‘xxxxx’ set but not used [-Wunused-but-set-variable]"
     //  for AUX pins defined but not connected
-
     // defined auxX are inputs by default
-    if (aux3 > 0) pinMode(aux3,INPUT);
-    if (aux5 > 0) pinMode(aux5,INPUT);
-    if (aux6 > 0) pinMode(aux6,INPUT);
-    #ifndef SPINDLE_SPEED
-      if (aux7 > 0) pinMode(aux7,INPUT);
-    #endif
-    if (aux8 > 0) pinMode(aux8,INPUT);
-    if (aux9 > 0) pinMode(aux9,INPUT);
+             if (aux3 > 0) pinMode(aux3,INPUT);
+             if (aux5 > 0) pinMode(aux5,INPUT);
+             if (aux6 > 0) pinMode(aux6,INPUT);
+               #ifndef SPINDLE_SPEED
+                  if (aux7 > 0) pinMode(aux7,INPUT);
+               #endif
+             if (aux8 > 0) pinMode(aux8,INPUT);
+             if (aux9 > 0) pinMode(aux9,INPUT);
+      
 }
 
 int getPCBVersion(){
@@ -522,7 +529,7 @@ void setPWMPrescalers(int prescalerChoice) {
             }
     #endif
     // tailor the PWM frequency to the chip
-    if ((TLE5206)||(TB6643)) {
+    if (TLE5206 || TB6643) {
     // The upper limit to PWM frequency for TLE5206 is 1,000Hz
     //  so only '3' is valid
         prescalerChoice = 3;
@@ -536,6 +543,7 @@ void setPWMPrescalers(int prescalerChoice) {
     TCCR3B &= ~prescalerEraser;   // this operation sets the three bits in TCCR3B to 0
     TCCR4B &= ~prescalerEraser;   // this operation sets the three bits in TCCR4B to 0
     // now set those same three bits
+    
 // ————————————————————————————–
 // TIMER 2       (Pin 9, 10)
 // Value  Divisor  Frequency
@@ -636,8 +644,9 @@ void systemSaveAxesPosition(){
     /*
     Save steps of axes to EEPROM if they are all detached
     */
-    if (sys.writeStepsToEEPROM && !leftAxis.attached() && !rightAxis.attached() && !zAxis.attached()){
-        settingsSaveStepstoEEprom();
+      if (sys.writeStepsToEEPROM && !leftAxis.attached() && !rightAxis.attached() && !zAxis.attached()){
+      settingsSaveStepstoEEprom();
+        
     }
 }
 
@@ -650,7 +659,7 @@ void systemReset(){
     zAxis.detach();
     setSpindlePower(false);
     // TODO: define in this scope:
-    //LaserOff();
+    laserOff();
     // Reruns the initial setup function and calls stop to re-init state
     sys.stop = true;
     setup();

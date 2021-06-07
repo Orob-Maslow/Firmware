@@ -1,8 +1,4 @@
-/*This file is part of the Maslow Control Software.
-    The Maslow Control Software is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+/*This file is pa
     Maslow Control Software is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -29,8 +25,7 @@
  * Edit the line "compiler.warning_level=none" to "compiler.warning_level=all"
  * and restart the IDE.
  */
-
-// TB6643 Added by Rob Owings April 2021 with help from Eastbay Source along with TLE9201 shield support
+// Holey 51.29
 
 // TLE9201 version
 // TLE5206 version
@@ -61,7 +56,7 @@ Axis zAxis;
 Kinematics kinematics;
 
 void setup(){
-    Serial.begin(115200);
+    Serial.begin(57600);
     Serial.print(F("PCB v1."));
     Serial.print(getPCBVersion());
     if (TLE5206 == true) { Serial.print(F(" TLE5206 ")); }
@@ -78,7 +73,7 @@ void setup(){
         EEPROM[ FAKE_SERVO ] = 0;                   // force it to the 'off' value
     }
     settingsLoadFromEEprom();
-    sys.feedrate = sysSettings.maxFeed *.8 // 2.0;  // changed 6/21
+    sys.feedrate = sysSettings.maxFeed / 2.0;
     setupAxes();
     settingsLoadStepsFromEEprom();
     // Set initial desired position of the machine to its current position
@@ -118,6 +113,7 @@ void loop(){
     if (sys.stop){               // only called on sys.stop to prevent stopping
         initMotion();            // on USB disconnect.  Might consider removing
         setSpindlePower(false);  // this restriction for safety if we are
+        laserOff();
     }                            // comfortable that USB disconnects are
                                  // not a common occurrence anymore
     kinematics.init();

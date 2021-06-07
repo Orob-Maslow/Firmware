@@ -50,7 +50,6 @@ int  Motor::setupMotor(const int& pwmPin, const int& pin1, const int& pin2){
 
   } else if (TB6643 == true){
   //set pinmodes
-    pinMode(_pwmPin,   INPUT);   // TLE5206 'Error Flag' pin
     pinMode(_pin1,     OUTPUT);
     pinMode(_pin2,     OUTPUT);
 
@@ -137,7 +136,6 @@ void Motor::write(int speed, bool force){
         bool usePin2 = ((_pin2 != 4) && (_pin2 != 13) && (_pin2 != 11) && (_pin2 != 12)); // avoid PWM using timer0 or timer1
         bool usepwmPin = ((TLE5206 == false) && (_pwmPin != 4) && (_pwmPin != 13) && (_pwmPin != 11) && (_pwmPin != 12)); // avoid PWM using timer0 or timer1
        if (TLE5206)  {
-            speed = constrain(speed, 0, 254); // avoid issue when PWM value is 255
             if (forward) {
                 if (speed > 0) {
                     if (usePin2) {
@@ -165,13 +163,14 @@ void Motor::write(int speed, bool force){
                 if (speed > 0) {
                         analogWrite(_pin1 , speed);
                         digitalWrite(_pin2 , LOW); 
-                } else { // speed = 0 so put on the brakes
+                } else { // speed = 0 brake
                     digitalWrite(_pin1 , HIGH);
                     digitalWrite(_pin2 , HIGH);
                 }
-            } else { // reverse      
+            } else { // reverse     
                     digitalWrite(_pin1 , LOW);
-                    analogWrite(_pin2 , speed);          
+                    analogWrite(_pin2 , speed);   
+                  
             }
         } else if (TLE9201) {
             int dirPin     = _pin1;
@@ -212,6 +211,8 @@ void Motor::write(int speed, bool force){
             digitalWrite(dirPin, dirCMD); // TLE9201 DIR pin
             analogWrite (_pwmPin, speed); // TLE9201 PWM pin
             digitalWrite(enablePin, LOW); // TLE9201 ENABLE pin, HIGH = disable
+
+            
         }else { // L298 boards
             if (forward){
                 if (usepwmPin){

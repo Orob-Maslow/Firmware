@@ -15,5 +15,3 @@ simduino_atmega2560_flash.bin
 simduino
 .vscode/*.db
 obj-x86_64-apple-darwin17.4.0
-cnc_ctrl_v1/cnc_ctrl_v1.ino.mega.hex
-cnc_ctrl_v1/cnc_ctrl_v1.ino.with_bootloader.mega.hex
