@@ -188,7 +188,7 @@ byte  executeBcodeLine(const String& gcodeLine){
         bit_false(sys.state,STATE_POS_ERR_IGNORE);
 
         //set flag to write current encoder steps to EEPROM
-        sys.writeStepsToEEPROM = true;
+         sys.writeStepsToEEPROM = true;
 
         return STATUS_OK;
     }
@@ -210,7 +210,7 @@ byte  executeBcodeLine(const String& gcodeLine){
 
         kinematics.forward(leftAxis.read(), rightAxis.read(), &sys.xPosition, &sys.yPosition, 0, 0);
         //set flag to write current encoder steps to EEPROM
-        sys.writeStepsToEEPROM = true;
+         sys.writeStepsToEEPROM = true;
 
         return STATUS_OK;
     }
@@ -232,7 +232,7 @@ byte  executeBcodeLine(const String& gcodeLine){
         Serial.println(F("Message: The machine chains have been manually re-calibrated."));
 
         //set flag to write current encoder steps to EEPROM
-        sys.writeStepsToEEPROM = true;
+         sys.writeStepsToEEPROM = true;
 
         return STATUS_OK;
     }

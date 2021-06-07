@@ -303,19 +303,23 @@ void   Axis::test(){
     //print something to prevent the connection from timing out
     Serial.print(F("<Idle,MPos:0,0,0,WPos:0.000,0.000,0.000>"));
 
-    int i = 0;
+   
     double encoderPos = motorGearboxEncoder.encoder.read(); //record the position now
 
-    //move the motor
-    motorGearboxEncoder.motor.directWrite(255);
-    while (i < 1000){
-        i++;
-        maslowDelay(1);
-        if (sys.stop){return;}
+  //ramp up to full speed
+    for (int ramp = 1 ; ramp <= 255; ramp += 15) {
+    motorGearboxEncoder.motor.directWrite(ramp);
+    maslowDelay(30);
+    if (sys.stop){return;}
     }
-    //stop the motor
-    motorGearboxEncoder.motor.directWrite(0);
-
+    maslowDelay(3000);
+    //ramp down to stop
+    for (int ramp = 241 ; ramp >= 1; ramp += -15) {
+    motorGearboxEncoder.motor.directWrite(ramp);
+    maslowDelay(30);
+    if (sys.stop){return;}
+    }
+    //maslowDelay(300);
     //check to see if it moved
     if(encoderPos - motorGearboxEncoder.encoder.read() > 500){
         Serial.println(F("Direction 1 - Pass"));
@@ -323,22 +327,25 @@ void   Axis::test(){
     else{
         Serial.println(F("Direction 1 - Fail"));
     }
-
+    
     //record the position again
     encoderPos = motorGearboxEncoder.encoder.read();
     Serial.print(F("<Idle,MPos:0,0,0,WPos:0.000,0.000,0.000>"));
-
+    
     //move the motor in the other direction
-    i = 0;
-    motorGearboxEncoder.motor.directWrite(-255);
-    while (i < 1000){
-        i++;
-        maslowDelay(1);
-        if (sys.stop){return;}
+    for (int ramp = -1 ; ramp >= -255; ramp += -15) {
+    motorGearboxEncoder.motor.directWrite(ramp);
+    maslowDelay(30);
+    if (sys.stop){return;}  
     }
-    //stop the motor
+    maslowDelay(2200); // ensure the motor spins at least one full revolution 1700
+    for (int ramp = -241 ; ramp <= -1; ramp += 15) {
+    motorGearboxEncoder.motor.directWrite(ramp);
+    maslowDelay(30);
+    if (sys.stop){return;}
+    }
+    maslowDelay(300);
     motorGearboxEncoder.motor.directWrite(0);
-
     //check to see if it moved
     if(encoderPos - motorGearboxEncoder.encoder.read() < -500){
         Serial.println(F("Direction 2 - Pass"));
@@ -346,7 +353,7 @@ void   Axis::test(){
     else{
         Serial.println(F("Direction 2 - Fail"));
     }
-
+    
     Serial.print(F("<Idle,MPos:0,0,0,WPos:0.000,0.000,0.000>"));
 }
 
