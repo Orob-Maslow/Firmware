@@ -30,6 +30,7 @@
  * and restart the IDE.
  */
 
+// TB6643 Added by Rob Owings April 2021 with help from Eastbay Source along with TLE9201 shield support
 
 // TLE9201 version
 // TLE5206 version
@@ -77,7 +78,7 @@ void setup(){
         EEPROM[ FAKE_SERVO ] = 0;                   // force it to the 'off' value
     }
     settingsLoadFromEEprom();
-    sys.feedrate = sysSettings.maxFeed / 2.0;
+    sys.feedrate = sysSettings.maxFeed *.8 // 2.0;  // changed 6/21
     setupAxes();
     settingsLoadStepsFromEEprom();
     // Set initial desired position of the machine to its current position
