@@ -522,7 +522,7 @@ void setPWMPrescalers(int prescalerChoice) {
             }
     #endif
     // tailor the PWM frequency to the chip
-    if (TLE5206) {
+    if ((TLE5206)||(TB6643)) {
     // The upper limit to PWM frequency for TLE5206 is 1,000Hz
     //  so only '3' is valid
         prescalerChoice = 3;

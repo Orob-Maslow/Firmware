@@ -130,7 +130,7 @@ void Motor::write(int speed, bool force){
     if ((_attachedState == 1 or force) and (FAKE_SERVO_STATE != FAKE_SERVO_PERMITTED)){
         speed = constrain(speed, -255, 255);
         _lastSpeed = speed; //saves speed for use in additive write
-        bool forward = (speed > 0);
+        bool forward = (speed >= 0);
         speed = abs(speed); //remove sign from input because direction is set by control pins on H-bridge
 
         bool usePin1 = ((_pin1 != 4) && (_pin1 != 13) && (_pin1 != 11) && (_pin1 != 12)); // avoid PWM using timer0 or timer1
