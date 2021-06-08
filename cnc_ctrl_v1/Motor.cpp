@@ -45,8 +45,8 @@ int  Motor::setupMotor(const int& pwmPin, const int& pin1, const int& pin2){
     pinMode(_pin2,     OUTPUT);
 
  //stop the motor
-    digitalWrite(_pin1,    LOW);
-    digitalWrite(_pin2,    LOW) ;
+    digitalWrite(_pin1,    HIGH);
+    digitalWrite(_pin2,    HIGH) ;
 
   } else if (TB6643 == true){
   //set pinmodes
